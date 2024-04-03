@@ -72,9 +72,23 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         String word = jsonObject.getString("word");
 
+                        // Extract synonyms and antonyms from meanings array if available
                         JSONArray meaningsArray = jsonObject.getJSONArray("meanings");
                         for (int j = 0; j < meaningsArray.length(); j++) {
                             JSONObject meaningObject = meaningsArray.getJSONObject(j);
+
+                            // Check if synonyms and antonyms are available for this meaning
+                            JSONArray synonymsArray = meaningObject.optJSONArray("synonyms");
+                            JSONArray antonymsArray = meaningObject.optJSONArray("antonyms");
+
+                            // If synonyms and antonyms are not found at meaning level, search at root level
+                            if (synonymsArray == null) {
+                                synonymsArray = jsonObject.optJSONArray("synonyms");
+                            }
+                            if (antonymsArray == null) {
+                                antonymsArray = jsonObject.optJSONArray("antonyms");
+                            }
+
                             String partOfSpeech = meaningObject.getString("partOfSpeech");
                             JSONArray definitionsArray = meaningObject.getJSONArray("definitions");
                             for (int k = 0; k < definitionsArray.length(); k++) {
@@ -87,22 +101,32 @@ public class MainActivity extends AppCompatActivity {
                                 dictionaryData.setPartOfSpeech(partOfSpeech);
                                 dictionaryData.setDefination(definition);
 
-                                JSONArray synonymsArray = definitionObject.optJSONArray("synonyms");
-                                if (synonymsArray != null) {
-                                    List<String> synonymList = new ArrayList<>();
+                                // Retrieve synonyms
+                                if (synonymsArray != null && synonymsArray.length() > 0) {
+                                    StringBuilder synonymsBuilder = new StringBuilder();
                                     for (int m = 0; m < synonymsArray.length(); m++) {
-                                        synonymList.add(synonymsArray.getString(m));
+                                        synonymsBuilder.append(synonymsArray.getString(m));
+                                        if (m < synonymsArray.length() - 1) {
+                                            synonymsBuilder.append(", ");
+                                        }
                                     }
-                                    dictionaryData.setSynonyms(synonymList.toString());
+                                    dictionaryData.setSynonyms(synonymsBuilder.toString());
+                                } else {
+                                    dictionaryData.setSynonyms("");
                                 }
 
-                                JSONArray antonymsArray = definitionObject.optJSONArray("antonyms");
-                                if (antonymsArray != null) {
-                                    List<String> antonymList = new ArrayList<>();
+                                // Retrieve antonyms
+                                if (antonymsArray != null && antonymsArray.length() > 0) {
+                                    StringBuilder antonymsBuilder = new StringBuilder();
                                     for (int n = 0; n < antonymsArray.length(); n++) {
-                                        antonymList.add(antonymsArray.getString(n));
+                                        antonymsBuilder.append(antonymsArray.getString(n));
+                                        if (n < antonymsArray.length() - 1) {
+                                            antonymsBuilder.append(", ");
+                                        }
                                     }
-                                    dictionaryData.setAntonyms(antonymList.toString());
+                                    dictionaryData.setAntonyms(antonymsBuilder.toString());
+                                } else {
+                                    dictionaryData.setAntonyms("");
                                 }
 
                                 // Add the DictionaryData object to the list
@@ -124,16 +148,17 @@ public class MainActivity extends AppCompatActivity {
         });
         queue.add(request);
     }
-        private void setDataToUI() {
-            // Set the word in the TextView
-            if (!dictionaryArrayList.isEmpty()) {
-                wordTV.setText(dictionaryArrayList.get(0).getWord());
-            } else {
-                // If no data is available, clear the word TextView
-                wordTV.setText("");
-            }
-            // Set the adapter to the RecyclerView
-            DictionaryAdapter dictionaryAdapter = new DictionaryAdapter(dictionaryArrayList);
-            dictionaryRecyclerView.setAdapter(dictionaryAdapter);
+
+    private void setDataToUI() {
+        // Set the word in the TextView
+        if (!dictionaryArrayList.isEmpty()) {
+            wordTV.setText(dictionaryArrayList.get(0).getWord());
+        } else {
+            // If no data is available, clear the word TextView
+            wordTV.setText("");
         }
+        // Set the adapter to the RecyclerView
+        DictionaryAdapter dictionaryAdapter = new DictionaryAdapter(dictionaryArrayList);
+        dictionaryRecyclerView.setAdapter(dictionaryAdapter);
+    }
 }
