@@ -1,7 +1,12 @@
 package com.example.dictionary.dto;
 
 public class DictionaryData {
-    String word,partOfSpeech,defination,another,third,synonyms,antonyms,pronunceaudio;
+    private String word;
+    private String partOfSpeech;
+    private String defination;
+    private String synonyms;
+    private String antonyms;
+    private String pronunceaudio;
 
     public String getWord() {
         return word;
@@ -17,22 +22,6 @@ public class DictionaryData {
 
     public void setDefination(String defination) {
         this.defination = defination;
-    }
-
-    public String getAnother() {
-        return another;
-    }
-
-    public void setAnother(String another) {
-        this.another = another;
-    }
-
-    public String getThird() {
-        return third;
-    }
-
-    public void setThird(String third) {
-        this.third = third;
     }
 
     public String getSynonyms() {

@@ -25,9 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,90 +39,101 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        inputET = findViewById(R.id.search_input);
         searchBTN = findViewById(R.id.search_btn);
         wordTV = findViewById(R.id.word_textview);
-        inputET=findViewById(R.id.search_input);
-        // Initializing UI
-        searchBTN.setOnClickListener(new View.OnClickListener()
-    {
-        @Override
-        public void onClick (View view){
-            initUI();
-    }
-    });
-}
-
-    private void initUI() {
-        dictionaryRecyclerView = (RecyclerView) findViewById(R.id.meaning_recycler_view);
-        wordTV = findViewById(R.id.word_textview);
+        dictionaryRecyclerView = findViewById(R.id.meaning_recycler_view);
         dictionaryRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        String inputWord = inputET.getText().toString();
-        getdictionaryData(inputWord);
+
+        searchBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String inputWord = inputET.getText().toString().trim();
+                if (!inputWord.isEmpty()) {
+                    getDictionaryData(inputWord);
+                } else {
+                    Toast.makeText(MainActivity.this, "Please enter a word", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    private void setDataToUI() {
-        wordTV.setText(dictionaryArrayList.get(0).getWord());
-        DictionaryAdapter dictionaryAdapter = new DictionaryAdapter(dictionaryArrayList);
-        dictionaryRecyclerView.setAdapter(dictionaryAdapter);
-    }
-
-    protected void getdictionaryData(String inputword) {
+    private void getDictionaryData(String inputWord) {
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        String url = "https://api.dictionaryapi.dev/api/v2/entries/en/" + inputword;
+        String url = "https://api.dictionaryapi.dev/api/v2/entries/en/" + inputWord;
         StringRequest request = new StringRequest(Request.Method.GET, url, new com.android.volley.Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     JSONArray jsonArray = new JSONArray(response);
+                    dictionaryArrayList.clear(); // Clear previous data
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        DictionaryData dictionaryData = new DictionaryData();
-                        dictionaryData.setWord(jsonObject.getString("word"));
-                        // Extract meaning details
-                        JSONArray meaningArray = jsonObject.getJSONArray("meanings");
-                        for (int j = 0; j < meaningArray.length(); j++) {
-                            JSONObject meaningObject = meaningArray.getJSONObject(j);
-                            dictionaryData.setPartOfSpeech(meaningObject.getString("partOfSpeech"));
-                            dictionaryData.setDefination(meaningObject.getJSONArray("definitions").getJSONObject(0).getString("definition"));
+                        String word = jsonObject.getString("word");
 
-                            // Extract synonyms and antonyms (assuming first definition)
-                            JSONArray synonyms = meaningObject.optJSONArray("synonyms");
-                            if (synonyms != null) {
-                                List<String> synonymList = new ArrayList<>();
-                                for (int k = 0; k < synonyms.length(); k++) {
-                                    synonymList.add(synonyms.getString(k));
+                        JSONArray meaningsArray = jsonObject.getJSONArray("meanings");
+                        for (int j = 0; j < meaningsArray.length(); j++) {
+                            JSONObject meaningObject = meaningsArray.getJSONObject(j);
+                            String partOfSpeech = meaningObject.getString("partOfSpeech");
+                            JSONArray definitionsArray = meaningObject.getJSONArray("definitions");
+                            for (int k = 0; k < definitionsArray.length(); k++) {
+                                JSONObject definitionObject = definitionsArray.getJSONObject(k);
+                                String definition = definitionObject.getString("definition");
+
+                                // Initialize a new DictionaryData object for each definition
+                                DictionaryData dictionaryData = new DictionaryData();
+                                dictionaryData.setWord(word);
+                                dictionaryData.setPartOfSpeech(partOfSpeech);
+                                dictionaryData.setDefination(definition);
+
+                                JSONArray synonymsArray = definitionObject.optJSONArray("synonyms");
+                                if (synonymsArray != null) {
+                                    List<String> synonymList = new ArrayList<>();
+                                    for (int m = 0; m < synonymsArray.length(); m++) {
+                                        synonymList.add(synonymsArray.getString(m));
+                                    }
+                                    dictionaryData.setSynonyms(synonymList.toString());
                                 }
-                                dictionaryData.setSynonyms(synonymList.toString());
-                            }
-                            JSONArray antonyms = meaningObject.optJSONArray("antonyms");
-                            if (antonyms != null) {
-                                List<String> antonymList = new ArrayList<>();
-                                for (int k = 0; k < antonyms.length(); k++) {
-                                    antonymList.add(antonyms.getString(k));
+
+                                JSONArray antonymsArray = definitionObject.optJSONArray("antonyms");
+                                if (antonymsArray != null) {
+                                    List<String> antonymList = new ArrayList<>();
+                                    for (int n = 0; n < antonymsArray.length(); n++) {
+                                        antonymList.add(antonymsArray.getString(n));
+                                    }
+                                    dictionaryData.setAntonyms(antonymList.toString());
                                 }
-                                dictionaryData.setAntonyms(antonymList.toString());
+
+                                // Add the DictionaryData object to the list
+                                dictionaryArrayList.add(dictionaryData);
                             }
-                        dictionaryArrayList.add(dictionaryData);
-                        setDataToUI();
+                        }
                     }
-                }
+                    setDataToUI();
                 } catch (JSONException e) {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
-
                 }
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Fail to get response = " + error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
             }
-        }) {
-
-        };
+        });
         queue.add(request);
     }
-    }
-
-
-
+        private void setDataToUI() {
+            // Set the word in the TextView
+            if (!dictionaryArrayList.isEmpty()) {
+                wordTV.setText(dictionaryArrayList.get(0).getWord());
+            } else {
+                // If no data is available, clear the word TextView
+                wordTV.setText("");
+            }
+            // Set the adapter to the RecyclerView
+            DictionaryAdapter dictionaryAdapter = new DictionaryAdapter(dictionaryArrayList);
+            dictionaryRecyclerView.setAdapter(dictionaryAdapter);
+        }
+}
