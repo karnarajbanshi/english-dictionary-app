@@ -1,12 +1,14 @@
 package com.example.dictionary.dto;
 
+import java.util.List;
+
 public class DictionaryData {
     private String word;
     private String partOfSpeech;
-    private String defination;
+    private List<String> definitions;
     private String synonyms;
     private String antonyms;
-    private String pronunceaudio;
+    private String phonetic;
 
     public String getWord() {
         return word;
@@ -16,12 +18,20 @@ public class DictionaryData {
         this.word = word;
     }
 
-    public String getDefination() {
-        return defination;
+    public String getPartOfSpeech() {
+        return partOfSpeech;
     }
 
-    public void setDefination(String defination) {
-        this.defination = defination;
+    public void setPartOfSpeech(String partOfSpeech) {
+        this.partOfSpeech = partOfSpeech;
+    }
+
+    public List<String> getDefinitions() {
+        return definitions;
+    }
+
+    public void setDefinitions(List<String> definitions) {
+        this.definitions = definitions;
     }
 
     public String getSynonyms() {
@@ -40,19 +50,11 @@ public class DictionaryData {
         this.antonyms = antonyms;
     }
 
-    public String getPronunceaudio() {
-        return pronunceaudio;
+    public String getPhonetic() {
+        return phonetic;
     }
 
-    public void setPronunceaudio(String pronunceaudio) {
-        this.pronunceaudio = pronunceaudio;
-    }
-
-    public String getPartOfSpeech() {
-        return partOfSpeech;
-    }
-
-    public void setPartOfSpeech(String partOfSpeech) {
-        this.partOfSpeech = partOfSpeech;
+    public void setPhonetic(String phonetic) {
+        this.phonetic = phonetic;
     }
 }

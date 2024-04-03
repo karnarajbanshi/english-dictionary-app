@@ -1,10 +1,10 @@
 package com.example.dictionary;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,14 +25,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView dictionaryRecyclerView;
-    TextView wordTV;
+    TextView wordTV, phoneticTV;
     EditText inputET;
     Button searchBTN;
+    ProgressBar progressBar;
     ArrayList<DictionaryData> dictionaryArrayList = new ArrayList<>();
 
     @Override
@@ -43,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
         inputET = findViewById(R.id.search_input);
         searchBTN = findViewById(R.id.search_btn);
         wordTV = findViewById(R.id.word_textview);
+        phoneticTV = findViewById(R.id.phonetic_textview);
         dictionaryRecyclerView = findViewById(R.id.meaning_recycler_view);
+        progressBar = findViewById(R.id.progress_bar);
+
         dictionaryRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         searchBTN.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getDictionaryData(String inputWord) {
+        progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         String url = "https://api.dictionaryapi.dev/api/v2/entries/en/" + inputWord;
         StringRequest request = new StringRequest(Request.Method.GET, url, new com.android.volley.Response.Listener<String>() {
@@ -71,17 +77,30 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         String word = jsonObject.getString("word");
+                        String phonetic = jsonObject.optString("phonetic");
 
-                        // Extract synonyms and antonyms from meanings array if available
                         JSONArray meaningsArray = jsonObject.getJSONArray("meanings");
                         for (int j = 0; j < meaningsArray.length(); j++) {
                             JSONObject meaningObject = meaningsArray.getJSONObject(j);
+                            String partOfSpeech = meaningObject.getString("partOfSpeech");
+                            JSONArray definitionsArray = meaningObject.getJSONArray("definitions");
 
-                            // Check if synonyms and antonyms are available for this meaning
+                            List<String> definitionsList = new ArrayList<>();
+                            for (int k = 0; k < definitionsArray.length(); k++) {
+                                JSONObject definitionObject = definitionsArray.getJSONObject(k);
+                                String definition = definitionObject.getString("definition");
+                                definitionsList.add(definition);
+                            }
+
+                            DictionaryData dictionaryData = new DictionaryData();
+                            dictionaryData.setWord(word);
+                            dictionaryData.setPartOfSpeech(partOfSpeech);
+                            dictionaryData.setDefinitions(definitionsList);
+                            dictionaryData.setPhonetic(phonetic);
+
                             JSONArray synonymsArray = meaningObject.optJSONArray("synonyms");
                             JSONArray antonymsArray = meaningObject.optJSONArray("antonyms");
 
-                            // If synonyms and antonyms are not found at meaning level, search at root level
                             if (synonymsArray == null) {
                                 synonymsArray = jsonObject.optJSONArray("synonyms");
                             }
@@ -89,49 +108,33 @@ public class MainActivity extends AppCompatActivity {
                                 antonymsArray = jsonObject.optJSONArray("antonyms");
                             }
 
-                            String partOfSpeech = meaningObject.getString("partOfSpeech");
-                            JSONArray definitionsArray = meaningObject.getJSONArray("definitions");
-                            for (int k = 0; k < definitionsArray.length(); k++) {
-                                JSONObject definitionObject = definitionsArray.getJSONObject(k);
-                                String definition = definitionObject.getString("definition");
-
-                                // Initialize a new DictionaryData object for each definition
-                                DictionaryData dictionaryData = new DictionaryData();
-                                dictionaryData.setWord(word);
-                                dictionaryData.setPartOfSpeech(partOfSpeech);
-                                dictionaryData.setDefination(definition);
-
-                                // Retrieve synonyms
-                                if (synonymsArray != null && synonymsArray.length() > 0) {
-                                    StringBuilder synonymsBuilder = new StringBuilder();
-                                    for (int m = 0; m < synonymsArray.length(); m++) {
-                                        synonymsBuilder.append(synonymsArray.getString(m));
-                                        if (m < synonymsArray.length() - 1) {
-                                            synonymsBuilder.append(", ");
-                                        }
+                            if (synonymsArray != null && synonymsArray.length() > 0) {
+                                StringBuilder synonymsBuilder = new StringBuilder();
+                                for (int m = 0; m < synonymsArray.length(); m++) {
+                                    synonymsBuilder.append(synonymsArray.getString(m));
+                                    if (m < synonymsArray.length() - 1) {
+                                        synonymsBuilder.append(", ");
                                     }
-                                    dictionaryData.setSynonyms(synonymsBuilder.toString());
-                                } else {
-                                    dictionaryData.setSynonyms("");
                                 }
-
-                                // Retrieve antonyms
-                                if (antonymsArray != null && antonymsArray.length() > 0) {
-                                    StringBuilder antonymsBuilder = new StringBuilder();
-                                    for (int n = 0; n < antonymsArray.length(); n++) {
-                                        antonymsBuilder.append(antonymsArray.getString(n));
-                                        if (n < antonymsArray.length() - 1) {
-                                            antonymsBuilder.append(", ");
-                                        }
-                                    }
-                                    dictionaryData.setAntonyms(antonymsBuilder.toString());
-                                } else {
-                                    dictionaryData.setAntonyms("");
-                                }
-
-                                // Add the DictionaryData object to the list
-                                dictionaryArrayList.add(dictionaryData);
+                                dictionaryData.setSynonyms(synonymsBuilder.toString());
+                            } else {
+                                dictionaryData.setSynonyms("");
                             }
+
+                            if (antonymsArray != null && antonymsArray.length() > 0) {
+                                StringBuilder antonymsBuilder = new StringBuilder();
+                                for (int n = 0; n < antonymsArray.length(); n++) {
+                                    antonymsBuilder.append(antonymsArray.getString(n));
+                                    if (n < antonymsArray.length() - 1) {
+                                        antonymsBuilder.append(", ");
+                                    }
+                                }
+                                dictionaryData.setAntonyms(antonymsBuilder.toString());
+                            } else {
+                                dictionaryData.setAntonyms("");
+                            }
+
+                            dictionaryArrayList.add(dictionaryData);
                         }
                     }
                     setDataToUI();
@@ -139,25 +142,26 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(MainActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
             }
         });
         queue.add(request);
     }
 
     private void setDataToUI() {
-        // Set the word in the TextView
         if (!dictionaryArrayList.isEmpty()) {
             wordTV.setText(dictionaryArrayList.get(0).getWord());
+            phoneticTV.setText(dictionaryArrayList.get(0).getPhonetic());
         } else {
-            // If no data is available, clear the word TextView
             wordTV.setText("");
+            phoneticTV.setText("");
         }
-        // Set the adapter to the RecyclerView
         DictionaryAdapter dictionaryAdapter = new DictionaryAdapter(dictionaryArrayList);
         dictionaryRecyclerView.setAdapter(dictionaryAdapter);
     }

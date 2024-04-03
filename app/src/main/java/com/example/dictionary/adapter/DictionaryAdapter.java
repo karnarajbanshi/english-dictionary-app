@@ -12,7 +12,6 @@ import com.example.dictionary.R;
 import com.example.dictionary.dto.DictionaryData;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DictionaryAdapter extends RecyclerView.Adapter<DictionaryAdapter.MyViewHolder> {
 
@@ -34,7 +33,14 @@ public class DictionaryAdapter extends RecyclerView.Adapter<DictionaryAdapter.My
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         DictionaryData dictionaryData = dictionaryDataList.get(position);
         holder.partOfSpeechTextView.setText(dictionaryData.getPartOfSpeech());
-        holder.definitionTextView.setText(dictionaryData.getDefination());
+
+        StringBuilder definitionsBuilder = new StringBuilder();
+        int count = 1;
+        for (String definition : dictionaryData.getDefinitions()) {
+            definitionsBuilder.append(count++).append(". ").append(definition).append("\n\n");
+        }
+        holder.definitionTextView.setText(definitionsBuilder.toString());
+
         holder.synonymsTextView.setText(dictionaryData.getSynonyms());
         holder.antonymsTextView.setText(dictionaryData.getAntonyms());
     }
