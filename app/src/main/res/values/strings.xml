@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Dictionary</string>
+    <string name="synonyms">Synonyms :</string>
+    <string name="antonyms">Antonyms :</string>
+</resources>
