@@ -19,7 +19,7 @@
 
 **Get Started in Minutes:**
 
-1. **Download:** Head over to the releases page: [https://gitlab.com/karnarajbanshi/english-dictionary-app/releases]
+1. **Download:** Head over to the releases page: [https://github.com/karnarajbanshi/english-dictionary-app/tree/main/releases]
 2. **Installation:** Enable installation from unknown sources in your device settings (if needed). Open the downloaded APK and follow the on-screen instructions.
 3. **Start Exploring:** Launch the app and embark on your vocabulary-building journey!
 
