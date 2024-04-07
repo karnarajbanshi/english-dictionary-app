@@ -2,6 +2,8 @@ package com.example.dictionary;
 
 import static com.example.dictionary.server_constants.ServerConsants.API_BASE_URL;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -162,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
         });
         queue.add(request);
     }
-
     private void setDataToUI() {
         if (!dictionaryArrayList.isEmpty()) {
             wordTV.setText(dictionaryArrayList.get(0).getWord());
