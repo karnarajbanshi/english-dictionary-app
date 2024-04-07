@@ -1,6 +1,10 @@
 package com.example.dictionary;
 
+import static com.example.dictionary.server_constants.ServerConsants.API_BASE_URL;
+
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     EditText inputET;
     Button searchBTN;
     ProgressBar progressBar;
+    String inputWord;
     ArrayList<DictionaryData> dictionaryArrayList = new ArrayList<>();
 
     @Override
@@ -67,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private void getDictionaryData(String inputWord) {
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        String url = "https://api.dictionaryapi.dev/api/v2/entries/en/" + inputWord;
+        String url = API_BASE_URL + inputWord;
         StringRequest request = new StringRequest(Request.Method.GET, url, new com.android.volley.Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -139,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     setDataToUI();
                 } catch (JSONException e) {
-                    Toast.makeText(MainActivity.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,"Error parsing JSON", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
                 progressBar.setVisibility(View.GONE);
@@ -147,7 +152,11 @@ public class MainActivity extends AppCompatActivity {
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
+                if(error.getMessage()==null) {
+                    Toast.makeText(MainActivity.this, "Input correct word", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(MainActivity.this,"Network error!",Toast.LENGTH_LONG).show();
+                }
                 progressBar.setVisibility(View.GONE);
             }
         });

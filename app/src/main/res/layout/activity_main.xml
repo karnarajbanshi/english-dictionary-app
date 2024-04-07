@@ -33,13 +33,14 @@
             android:id="@+id/progress_bar"
             android:layout_width="100dp"
             android:layout_height="24dp"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentEnd="false"
             android:layout_centerInParent="true"
-            android:indeterminateTint="@color/my_primary"
+            android:indeterminateTint="@color/grey"
             android:visibility="gone" />
 
 
     </RelativeLayout>
+
     <TextView
         android:id="@+id/word_textview"
         android:layout_width="wrap_content"
@@ -52,14 +53,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="/t e s t/"
+        android:text="/phonetic/"
         android:textColor="@color/grey"
         android:id="@+id/phonetic_textview"/>
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/meaning_recycler_view"/>
-
-
+        android:id="@+id/meaning_recycler_view"
+        android:layout_marginTop="8dp"/>
 
 </LinearLayout>
