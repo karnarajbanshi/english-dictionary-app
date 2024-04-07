@@ -42,7 +42,7 @@ We welcome contributions from passionate developers! Follow these steps to join 
 
 **License:**
 
-The English Dictionary App is distributed under the permissive terms of the MIT License ([link to LICENSE file]).
+The English Dictionary App is distributed under the permissive terms of the MIT License ([[https://gitlab.com/karnarajbanshi/english-dictionary-app/LICENSE.txt]]).
 
 **Download the English Dictionary App Today!**
 
